@@ -53,8 +53,14 @@ These features make the file upload service a versatile and reliable solution fo
    ```
 
 3. Set up the environment variables by copying `.env.template` to `.env` and filling in the required values:
+
    ```sh
    cp .env.template .env
+   ```
+
+4. Run the project:
+   ```sh
+   npm run dev
    ```
 
 ## Configuration
