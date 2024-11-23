@@ -4,12 +4,28 @@ import {
   OpenaiGenerateTextOptions,
   OpenaiProvider,
 } from './providers/openai/openai.provider'
+import { RedisCache } from '~/core/configuration/redis/cache'
 
 class Service {
   private openai = new OpenaiProvider()
+  private CACHE_TTL = 3600 // 1 hour
 
   async generateText(options: OpenaiGenerateTextOptions): Promise<string> {
-    return this.openai.generateText(options)
+    const cacheKey = `ai:text:${JSON.stringify(options)}`
+
+    // Try to get from cache first
+    const cached = await RedisCache.get<string>(cacheKey)
+    if (cached) {
+      return cached
+    }
+
+    // Generate new response
+    const result = await this.openai.generateText(options)
+
+    // Cache the result
+    await RedisCache.set(cacheKey, result, this.CACHE_TTL)
+
+    return result
   }
 
   async generateJson<SchemaType extends ZodType>(
