@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
 import React, { ReactNode, useState } from 'react'
 import superjson from 'superjson'
-import { createTRPCReact } from '../../.marblism/zenstack/client/react'
+import { createTRPCReact } from '../../principles/zenstack/client/react'
 
 export const Api = createTRPCReact<AppRouter>()
 

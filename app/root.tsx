@@ -8,7 +8,7 @@ import {
   ScrollRestoration,
 } from '@remix-run/react'
 
-import { WorkspaceProvider } from './core/.marblism/workspace'
+import { WorkspaceProvider } from './core/principles/workspace'
 import { UserProvider } from './core/context'
 import { TrpcClient } from './core/trpc'
 import { DesignSystemProvider } from './designSystem'
@@ -42,7 +42,7 @@ export const links: LinksFunction = () => {
     },
   ]
 
-return items
+  return items
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -59,11 +59,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <TrpcClient.Provider>
             <AnalyticsProvider>
               <WorkspaceProvider>
-                <UserProvider>
-
-{children}
-                  
-                </UserProvider>
+                <UserProvider>{children}</UserProvider>
               </WorkspaceProvider>
             </AnalyticsProvider>
           </TrpcClient.Provider>

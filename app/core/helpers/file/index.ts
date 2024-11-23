@@ -15,24 +15,46 @@ export namespace FileHelper {
     return fs.readFileSync(path, 'utf-8')
   }
 
-  export function writeFolder(path: string): void {
-    fs.mkdirSync(path, { recursive: true })
+  export function writeFolder(folderPath: string): void {
+    if (!folderPath || folderPath.trim() === '') {
+      throw new Error('Invalid path: Path cannot be empty')
+    }
+
+    const normalizedPath = Path.normalize(folderPath)
+    fs.mkdirSync(normalizedPath, { recursive: true })
   }
 
   export async function getFileBuffer(file: File): Promise<Buffer> {
     return Buffer.from(await file.arrayBuffer())
   }
 
-  export function writeFile(path: string, content: string | Buffer): void {
-    const pathFolder = path.split('/').slice(0, -1).join('/')
+  export async function writeFile(
+    filePath: string,
+    data: Buffer,
+  ): Promise<void> {
+    if (!filePath || filePath.trim() === '') {
+      throw new Error('Invalid path: Path cannot be empty')
+    }
 
-    writeFolder(pathFolder)
+    // Get the directory path
+    const dirPath = Path.dirname(filePath)
 
-    return fs.writeFileSync(path, content)
+    // Ensure the directory exists
+    writeFolder(dirPath)
+
+    // Write the file
+    await fs.promises.writeFile(filePath, data)
   }
 
   export function joinPaths(...paths: string[]): string {
-    return join(...paths)
+    // Filter out empty paths and normalize
+    const validPaths = paths.filter(p => p && p.trim() !== '')
+    if (validPaths.length === 0) {
+      throw new Error(
+        'Invalid paths: At least one valid path segment is required',
+      )
+    }
+    return join(...validPaths)
   }
 
   export function createReadStream(path: string): fs.ReadStream {

@@ -1,4 +1,4 @@
-import { createRouter } from '@/core/.marblism/zenstack/routers'
+import { createRouter } from '~/core/principles/zenstack/routers'
 import { AuthenticationServer } from '@/core/authentication/server'
 import { ConfigurationServer } from '@/core/configuration/server'
 import { Trpc } from '@/core/trpc/base'

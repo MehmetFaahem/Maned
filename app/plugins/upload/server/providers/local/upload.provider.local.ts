@@ -10,6 +10,7 @@ import {
   UploadPublicOptions,
   UploadPublicReturn,
 } from '../upload.provider'
+import * as path from 'path'
 
 export class UploadProviderLocal extends UploadProvider {
   private staticServerUrl: string
@@ -19,18 +20,28 @@ export class UploadProviderLocal extends UploadProvider {
   private pathPublicExternal = `/upload/public`
   private pathPrivateExternal = `/upload/private`
 
+  constructor() {
+    super()
+    this.pathPublicInternal = path.resolve('./public/upload/public')
+    this.pathPrivateInternal = path.resolve('./public/upload/private')
+    this.pathPublicExternal = '/upload/public'
+    this.pathPrivateExternal = '/upload/private'
+  }
+
   public initialise(): Promise<void> {
     try {
       FileHelper.writeFolder(this.pathPublicInternal)
+      FileHelper.writeFolder(this.pathPrivateInternal)
 
-      this.staticServerUrl = `${Configuration.getBaseUrl()}`
+      this.staticServerUrl = Configuration.getBaseUrl()
 
       console.log(`Upload Local is active`)
     } catch (error) {
       console.error(`Upload Local failed to start: ${error.message}`)
+      throw error
     }
 
-    return
+    return Promise.resolve()
   }
 
   async uploadPublic({
