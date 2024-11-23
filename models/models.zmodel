@@ -1,0 +1,179 @@
+enum UserStatus {
+    INVITED
+    VERIFIED
+}
+
+model User {
+    id                  String               @id @default(uuid())
+    name                String?
+    email               String?              @unique
+    pictureUrl          String?              @default('https://i.imgur.com/ZdJSK3Y.jpeg')
+    tokenInvitation     String?
+
+    status              UserStatus           @default(VERIFIED)
+
+    // this is the role of the user for the application
+    globalRole          String               @default('USER')
+    password            String?              @password @omit
+    createdAt           DateTime             @default(now())
+    updatedAt           DateTime             @updatedAt @default(now())
+
+    documents           Document[]           @relation("user")
+    documentVersions    DocumentVersion[]    @relation("user")
+    documentPermissions DocumentPermission[] @relation("user")
+    bookings            Booking[]            @relation("user")
+    notifications       Notification[]       @relation("user")
+    userPreferences     UserPreference[]     @relation("user")
+
+    @@auth()
+    @@allow("all", auth().id == this.id)
+    @@allow('all', auth().globalRole == 'ADMIN')
+
+    //we only allow that user to register if they don't create an admin role
+    @@allow("create", globalRole != 'ADMIN')
+    @@allow("read", true)
+}
+
+model RoleData {
+
+    id          String   @id @default(uuid())
+    name        String?
+    description String?
+    permissions Json?
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model SystemConfig {
+
+    id          String   @id @default(uuid())
+    configKey   String?
+    configValue String?
+    type        String?
+    description String?
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Document {
+
+    id                        String               @id @default(uuid())
+    title                     String?
+    description               String?
+    fileUrl                   String?
+    fileType                  String?
+    fileSize                  String?
+    status                    String?
+    version                   Float
+
+    userId                    String?
+    user                      User?                @relation(fields: [userId], references: [id], name: "user")
+    parentDocumentId          String?
+    parentDocument            Document?            @relation(fields: [parentDocumentId], references: [id], name: "parentDocument")
+
+    documentsAsParentDocument Document[]           @relation("parentDocument")
+    documentVersions          DocumentVersion[]    @relation("document")
+    documentPermissions       DocumentPermission[] @relation("document")
+    documentMetadatas         DocumentMetadata[]   @relation("document")
+    createdAt                 DateTime             @default(now())
+    updatedAt                 DateTime             @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model DocumentVersion {
+
+    id         String    @id @default(uuid())
+    fileUrl    String?
+    version    Float?
+
+    documentId String?
+    document   Document? @relation(fields: [documentId], references: [id], name: "document")
+    userId     String?
+    user       User?     @relation(fields: [userId], references: [id], name: "user")
+
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model DocumentPermission {
+
+    id             String    @id @default(uuid())
+    permissionType String?
+
+    documentId     String?
+    document       Document? @relation(fields: [documentId], references: [id], name: "document")
+    userId         String?
+    user           User?     @relation(fields: [userId], references: [id], name: "user")
+
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model DocumentMetadata {
+
+    id            String    @id @default(uuid())
+    metadataKey   String?
+    metadataValue String?
+
+    documentId    String?
+    document      Document? @relation(fields: [documentId], references: [id], name: "document")
+
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Booking {
+
+    id          String   @id @default(uuid())
+    title       String?
+    description String?
+    startDate   String?
+    endDate     String?
+    status      String?
+
+    userId      String?
+    user        User?    @relation(fields: [userId], references: [id], name: "user")
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model Notification {
+
+    id        String   @id @default(uuid())
+    title     String?
+    message   String?
+    type      String?
+    status    String?
+    isRead    Boolean
+
+    userId    String?
+    user      User?    @relation(fields: [userId], references: [id], name: "user")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
+model UserPreference {
+
+    id              String   @id @default(uuid())
+    preferenceKey   String?
+    preferenceValue String?
+
+    userId          String?
+    user            User?    @relation(fields: [userId], references: [id], name: "user")
+
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt @default(now())
+    @@allow("all", true)
+}
+
