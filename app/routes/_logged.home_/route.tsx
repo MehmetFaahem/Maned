@@ -1,30 +1,31 @@
+import { useUserContext } from '@/core/context'
+import { Api } from '@/core/trpc'
+import { PageLayout } from '@/designSystem'
+import { useUploadPublic } from '@/plugins/upload/client'
+import { useNavigate } from '@remix-run/react'
 import {
-  Typography,
+  Badge,
   Card,
+  Col,
+  Empty,
   Input,
   Row,
-  Col,
   Space,
-  Badge,
-  Empty,
+  Typography,
   Upload,
 } from 'antd'
+import dayjs from 'dayjs'
 import { useState } from 'react'
 const { Title, Text } = Typography
 const { Search } = Input
 const { Dragger } = Upload
-import { useUserContext } from '@/core/context'
-import dayjs from 'dayjs'
-import { useLocation, useNavigate, useParams } from '@remix-run/react'
-import { useUploadPublic } from '@/plugins/upload/client'
-import { Api } from '@/core/trpc'
-import { PageLayout } from '@/designSystem'
 
 export default function HomePage() {
   const navigate = useNavigate()
   const { user } = useUserContext()
   const [searchTerm, setSearchTerm] = useState('')
   const { mutateAsync: upload } = useUploadPublic()
+  const { mutateAsync: createDocument } = Api.document.create.useMutation()
 
   // Fetch recent documents
   const { data: recentDocuments } = Api.document.findMany.useQuery({
@@ -51,7 +52,7 @@ export default function HomePage() {
   const handleUpload = async (file: File) => {
     try {
       const { url } = await upload({ file })
-      await Api.document.create.mutate({
+      await createDocument({
         data: {
           title: file.name,
           fileUrl: url,
