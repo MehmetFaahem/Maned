@@ -10,6 +10,20 @@ services:
       POSTGRES_DB: api
     ports:
       - '5442:5432'
+    networks:
+      - app-network
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+
   pgadmin:
     container_name: pgadmin4
     image: dpage/pgadmin4
@@ -19,6 +33,9 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - '5052:80'
+    networks:
+      - app-network
+
   mail:
     container_name: mail
     image: axllent/mailpit
@@ -33,3 +50,31 @@ services:
       MP_DATA_FILE: /data/mailpit.db
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks:
+      - app-network
+
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - '8099:8099'
+    depends_on:
+      - database
+      - redis
+    environment:
+      - NODE_ENV=production
+      - PORT=8099
+      - SERVER_DATABASE_URL=postgresql://root:root@database:5432/api
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:

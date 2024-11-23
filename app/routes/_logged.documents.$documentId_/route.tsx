@@ -91,7 +91,7 @@ export default function DocumentDetailsPage() {
   const handlePermissionSubmit = async (values: any) => {
     try {
       // First find the user by email
-      const userFound = await Api.user.findFirst.query({
+      const userFound = await Api.user.findFirst.useQuery({
         where: { email: values.email },
       })
 
@@ -101,14 +101,15 @@ export default function DocumentDetailsPage() {
       }
 
       // Check if permission already exists
-      const existingPermission = await Api.documentPermission.findFirst.query({
-        where: {
-          documentId,
-          userId: userFound.id,
-        },
-      })
+      const existingPermission =
+        await Api.documentPermission.findFirst.useQuery({
+          where: {
+            documentId,
+            userId: userFound.data?.id,
+          },
+        })
 
-      if (existingPermission) {
+      if (existingPermission.data) {
         message.error('Permission already exists for this user')
         return
       }
@@ -117,7 +118,7 @@ export default function DocumentDetailsPage() {
       await createPermission({
         data: {
           documentId,
-          userId: userFound.id,
+          userId: userFound.data?.id,
           permissionType: values.permissionType,
         },
       })
