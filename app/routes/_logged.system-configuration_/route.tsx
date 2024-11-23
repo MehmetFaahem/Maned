@@ -32,7 +32,7 @@ export default function SystemConfigurationPage() {
   const { mutateAsync: updateConfig } = Api.systemConfig.update.useMutation()
   const { mutateAsync: createConfig } = Api.systemConfig.create.useMutation()
 
-  const [activeTab, setActiveTab] = useState('1')
+  const [activeTab, setActiveTab] = useState('2')
 
   const handleSaveGeneralSettings = async (values: any) => {
     try {
@@ -113,42 +113,42 @@ export default function SystemConfigurationPage() {
   }
 
   const items: TabsProps['items'] = [
-    {
-      key: '1',
-      label: (
-        <span>
-          <i className="las la-cog" /> General Settings
-        </span>
-      ),
-      children: (
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSaveGeneralSettings}
-          initialValues={{
-            siteName: configs?.find(c => c.configKey === 'siteName')
-              ?.configValue,
-            maintenanceMode:
-              configs?.find(c => c.configKey === 'maintenanceMode')
-                ?.configValue === 'true',
-          }}
-        >
-          <Form.Item label="Site Name" name="siteName">
-            <Input placeholder="Enter site name" />
-          </Form.Item>
-          <Form.Item
-            label="Maintenance Mode"
-            name="maintenanceMode"
-            valuePropName="checked"
-          >
-            <Switch />
-          </Form.Item>
-          <Button type="primary" htmlType="submit">
-            Save General Settings
-          </Button>
-        </Form>
-      ),
-    },
+    // {
+    //   key: '1',
+    //   label: (
+    //     <span>
+    //       <i className="las la-cog" /> General Settings
+    //     </span>
+    //   ),
+    //   children: (
+    //     <Form
+    //       form={form}
+    //       layout="vertical"
+    //       onFinish={handleSaveGeneralSettings}
+    //       initialValues={{
+    //         siteName: configs?.find(c => c.configKey === 'siteName')
+    //           ?.configValue,
+    //         maintenanceMode:
+    //           configs?.find(c => c.configKey === 'maintenanceMode')
+    //             ?.configValue === 'true',
+    //       }}
+    //     >
+    //       <Form.Item label="Site Name" name="siteName">
+    //         <Input placeholder="Enter site name" />
+    //       </Form.Item>
+    //       <Form.Item
+    //         label="Maintenance Mode"
+    //         name="maintenanceMode"
+    //         valuePropName="checked"
+    //       >
+    //         <Switch />
+    //       </Form.Item>
+    //       <Button type="primary" htmlType="submit">
+    //         Save General Settings
+    //       </Button>
+    //     </Form>
+    //   ),
+    // },
     {
       key: '2',
       label: (

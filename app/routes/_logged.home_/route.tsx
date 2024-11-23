@@ -9,6 +9,7 @@ import {
   Col,
   Empty,
   Input,
+  message,
   Row,
   Space,
   Typography,
@@ -16,6 +17,7 @@ import {
 } from 'antd'
 import dayjs from 'dayjs'
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 const { Title, Text } = Typography
 const { Search } = Input
 const { Dragger } = Upload
@@ -26,6 +28,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { mutateAsync: upload } = useUploadPublic()
   const { mutateAsync: createDocument } = Api.document.create.useMutation()
+  const queryClient = useQueryClient()
 
   // Fetch recent documents
   const { data: recentDocuments } = Api.document.findMany.useQuery({
@@ -63,6 +66,13 @@ export default function HomePage() {
           status: 'ACTIVE',
         },
       })
+
+      // Invalidate and refetch recent documents
+      await queryClient.invalidateQueries({
+        queryKey: [['document', 'findMany']],
+      })
+      message.success('Document uploaded successfully')
+
       return true
     } catch (error) {
       return false

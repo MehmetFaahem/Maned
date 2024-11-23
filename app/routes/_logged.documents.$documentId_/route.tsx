@@ -26,7 +26,8 @@ export default function DocumentDetailsPage() {
   const [isMetadataModalVisible, setIsMetadataModalVisible] = useState(false)
   const [isPermissionModalVisible, setIsPermissionModalVisible] =
     useState(false)
-  const [form] = Form.useForm()
+  const [metadataForm] = Form.useForm()
+  const [permissionForm] = Form.useForm()
 
   // Fetch document with versions, permissions, and metadata
   const { data: document, refetch } = Api.document.findFirst.useQuery({
@@ -79,7 +80,7 @@ export default function DocumentDetailsPage() {
       })
       message.success('Metadata added successfully')
       setIsMetadataModalVisible(false)
-      form.resetFields()
+      metadataForm.resetFields()
       refetch()
     } catch (error) {
       message.error('Failed to add metadata')
@@ -89,19 +90,44 @@ export default function DocumentDetailsPage() {
   // Handle permission submission
   const handlePermissionSubmit = async (values: any) => {
     try {
+      // First find the user by email
+      const userFound = await Api.user.findFirst.query({
+        where: { email: values.email },
+      })
+
+      if (!userFound) {
+        message.error('User not found with this email')
+        return
+      }
+
+      // Check if permission already exists
+      const existingPermission = await Api.documentPermission.findFirst.query({
+        where: {
+          documentId,
+          userId: userFound.id,
+        },
+      })
+
+      if (existingPermission) {
+        message.error('Permission already exists for this user')
+        return
+      }
+
+      // Create permission
       await createPermission({
         data: {
           documentId,
-          userId: values.userId,
+          userId: userFound.id,
           permissionType: values.permissionType,
         },
       })
       message.success('Permission added successfully')
       setIsPermissionModalVisible(false)
-      form.resetFields()
+      permissionForm.resetFields()
       refetch()
-    } catch (error) {
-      message.error('Failed to add permission')
+    } catch (error: any) {
+      console.error('Permission handling error:', error)
+      message.error(error.message || 'Failed to add permission')
     }
   }
 
@@ -115,8 +141,16 @@ export default function DocumentDetailsPage() {
         {/* Document Info Card */}
         <Card style={{ marginBottom: 24 }}>
           <Title level={4}>{document?.title}</Title>
-          <Text>{document?.description}</Text>
-          <Space style={{ marginTop: 16 }} wrap>
+          <Text
+            style={
+              document?.description
+                ? { marginTop: 16, marginRight: 16 }
+                : { marginTop: 16 }
+            }
+          >
+            {document?.description}
+          </Text>
+          <Space style={{ marginTop: 16, justifyContent: 'flex-end' }} wrap>
             <Button type="primary" onClick={handleDownload}>
               <i className="las la-download" /> Download
             </Button>
@@ -220,10 +254,13 @@ export default function DocumentDetailsPage() {
         <Modal
           title="Add Metadata"
           open={isMetadataModalVisible}
-          onCancel={() => setIsMetadataModalVisible(false)}
+          onCancel={() => {
+            setIsMetadataModalVisible(false)
+            metadataForm.resetFields()
+          }}
           footer={null}
         >
-          <Form form={form} onFinish={handleMetadataSubmit}>
+          <Form form={metadataForm} onFinish={handleMetadataSubmit}>
             <Form.Item name="key" rules={[{ required: true }]}>
               <Input placeholder="Metadata Key" />
             </Form.Item>
@@ -242,14 +279,28 @@ export default function DocumentDetailsPage() {
         <Modal
           title="Add Permission"
           open={isPermissionModalVisible}
-          onCancel={() => setIsPermissionModalVisible(false)}
+          onCancel={() => {
+            setIsPermissionModalVisible(false)
+            permissionForm.resetFields()
+          }}
           footer={null}
         >
-          <Form form={form} onFinish={handlePermissionSubmit}>
-            <Form.Item name="userId" rules={[{ required: true }]}>
-              <Input placeholder="User ID" />
+          <Form form={permissionForm} onFinish={handlePermissionSubmit}>
+            <Form.Item
+              name="email"
+              rules={[
+                { required: true, message: 'Email is required' },
+                { type: 'email', message: 'Please enter a valid email' },
+              ]}
+            >
+              <Input placeholder="User Email" />
             </Form.Item>
-            <Form.Item name="permissionType" rules={[{ required: true }]}>
+            <Form.Item
+              name="permissionType"
+              rules={[
+                { required: true, message: 'Permission type is required' },
+              ]}
+            >
               <Select placeholder="Permission Type">
                 <Select.Option value="READ">Read</Select.Option>
                 <Select.Option value="WRITE">Write</Select.Option>

@@ -1,3 +1,5 @@
+# I Used Remix instead of Next.js for this project and combined it with express.js, tRPC, Prisma, Shadcn UI, and Tailwind CSS.
+
 # Project Title
 
 This project is a file upload service that supports both local and AWS S3 storage. It provides functionalities to upload files publicly or privately, generate signed URLs, and convert private URLs to public URLs.
