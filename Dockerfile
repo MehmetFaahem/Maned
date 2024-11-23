@@ -4,19 +4,19 @@ FROM node:20-alpine as builder
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN npm install -g npm
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN npm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN pnpm run build
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine
@@ -30,10 +30,10 @@ RUN npm install -g pnpm
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/package-lock.json ./
 
 # Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+RUN npm install --prod --frozen-lockfile
 
 # Create upload directories
 RUN mkdir -p public/upload/public public/upload/private
@@ -42,4 +42,4 @@ RUN mkdir -p public/upload/public public/upload/private
 EXPOSE 8099
 
 # Start the application
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]
